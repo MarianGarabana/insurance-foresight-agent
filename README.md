@@ -1,9 +1,58 @@
 # Insurance Industry Foresight Research System
 
-**Current version: v0.2 — Search-Grounded Venture Scout**
+**Current version: v0.3 — Impact Analysis**
 
 A research automation tool built for a foresight collaboration between
 **IEX Labs**, **IE University**, and **VIG Insurance Group**.
+
+---
+
+## New in v0.3 — Impact Analysis
+
+v0.3 adds a fifth pipeline step that turns verified ventures into **actionable
+insurance research** by answering: *how does this venture actually affect
+insurance outcomes?*
+
+### What impact analysis does
+
+After each venture is classified (Step 4), the Impact Analyser (Step 5) calls
+the LLM as an insurance risk analyst. It returns a structured `ImpactResult`
+that maps the venture's effect onto five insurance outcome areas:
+
+| Code | Area | Example effect |
+|------|------|----------------|
+| **I1** | Premium Revenue | New parametric products increase addressable market |
+| **I2** | Investment Revenue | Climate volatility shifts asset allocation strategy |
+| **I3** | Claims Costs | Flood prediction reduces property claims severity |
+| **I4** | Operational Costs | AI underwriting cuts per-policy processing cost |
+| **I5** | Capital & Reserves | Better cat models reduce regulatory capital buffer |
+
+### What gets added to each record
+
+Each `VentureRecord` gains five new CSV columns:
+
+| Column | Description |
+|--------|-------------|
+| `impact_areas` | Pipe-separated I-codes, e.g. `I3\|I5` |
+| `impact_direction` | `positive`, `negative`, or `mixed` |
+| `mechanism` | Short technical explanation (1–2 sentences) |
+| `time_horizon` | `short` (<2 yr), `medium` (2–5 yr), `long` (>5 yr) |
+| `impact_confidence` | 0.0–1.0 analyst confidence score |
+
+### Why it matters
+
+Phase 1 research required manually tagging *how* each venture affects
+insurance. This step automates that tagging with explicit reasoning and
+confidence scores, making the pipeline auditable and scalable.
+
+**I3 reduction is the most important signal**: it means the venture
+reduces claims frequency or severity — the core insurance value driver.
+
+### Mock mode
+
+Set `USE_MOCK_LLM=true` in your `.env` to run the full pipeline
+(including impact analysis) without an OpenAI API key. All LLM steps
+return static mock responses.
 
 ---
 

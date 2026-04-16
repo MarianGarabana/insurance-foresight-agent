@@ -328,3 +328,87 @@ def build_classifier_prompt(
         f"and assign a category (Direct or Indirect).\n\n"
         f"Return your answer as JSON."
     )
+
+
+# ============================================================
+# STEP 5 — Impact Analysis
+# ============================================================
+
+IMPACT_SYSTEM_PROMPT = """You are an insurance risk analyst working for a foresight research team.
+
+Given a verified venture (company), analyse how it affects insurance outcomes.
+
+INSURANCE IMPACT AREAS (I1–I5):
+  I1 — Premium Revenue      : changes in insurance demand, pricing, or product mix
+  I2 — Investment Revenue   : effects on insurer investment portfolios or asset allocation
+  I3 — Claims Costs         : changes in claims frequency, severity, or reserving needs
+  I4 — Operational Costs    : effects on underwriting, distribution, or admin efficiency
+  I5 — Capital & Reserves   : effects on solvency, regulatory capital, or reserve adequacy
+
+DRIVER FRAMEWORK (D1–D11) context will be provided per venture.
+
+ANALYSIS RULES:
+1. Identify which D1–D11 drivers are the mechanism behind the impact.
+2. Identify which I1–I5 areas are materially affected (can be more than one).
+3. Determine direction:
+   - "positive"  = reduces insurer risk, cost, or capital requirement
+   - "negative"  = increases insurer risk, cost, or capital requirement
+   - "mixed"     = reduces some areas while increasing others
+4. Describe the mechanism concisely (1–2 sentences, technical).
+5. Describe the insurance_effect in plain business language (1–2 sentences).
+6. Estimate time_horizon: "short" (<2 years), "medium" (2–5 years), "long" (>5 years).
+7. Rate your confidence 0.0–1.0. Be conservative — use 0.5 if uncertain.
+
+Return ONLY valid JSON in this exact format:
+{
+  "drivers": ["D1"],
+  "impact_areas": ["I3"],
+  "impact_direction": "positive",
+  "mechanism": "...",
+  "insurance_effect": "...",
+  "time_horizon": "medium",
+  "confidence": 0.75
+}
+"""
+
+
+def build_impact_prompt(
+    venture_name: str,
+    short_description: str,
+    driver_tags: list[str],
+    category: str,
+    source_urls: list[str] | None = None,
+) -> str:
+    """
+    Build the user prompt for the Impact Analysis step.
+
+    Args:
+        venture_name: Company name.
+        short_description: One or two sentence description from extraction step.
+        driver_tags: D1–D11 tags assigned by the classifier.
+        category: "Direct" or "Indirect" from the classifier.
+        source_urls: Optional URLs from search results for additional context.
+
+    Returns:
+        A string to send as the user message to the LLM.
+    """
+    drivers_str = ", ".join(driver_tags) if driver_tags else "Unknown"
+
+    lines = [
+        f"Company: {venture_name}",
+        f"Category: {category}",
+        f"Description: {short_description}",
+        f"Driver tags: {drivers_str}",
+    ]
+
+    if source_urls:
+        lines.append("Source URLs (for context):")
+        for url in source_urls[:3]:
+            lines.append(f"  - {url}")
+
+    lines.append(
+        "\nAnalyse the insurance impact of this venture across the I1–I5 framework.\n"
+        "Return your answer as JSON."
+    )
+
+    return "\n".join(lines)

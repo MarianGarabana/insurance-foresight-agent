@@ -24,6 +24,8 @@ Usage:
     )
 """
 
+import json
+import os
 import time
 
 import openai
@@ -32,6 +34,58 @@ from src.config import settings
 from src.logger import get_logger
 
 log = get_logger(__name__)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Mock mode (USE_MOCK_LLM=true)
+#
+# When enabled, call_llm() returns a static JSON response instead of hitting
+# the OpenAI API. Useful for testing the pipeline without API keys or quota.
+#
+# Each key is the `context` string passed by the caller (e.g. "impact").
+# ─────────────────────────────────────────────────────────────────────────────
+
+_MOCK_RESPONSES: dict[str, dict] = {
+    "scout": {
+        "candidates": [
+            {
+                "name": "FloodSense",
+                "suggested_website": "https://floodsense.io",
+                "source_urls": [],
+                "reasoning": "Mock: flood analytics venture relevant to property insurance.",
+            }
+        ]
+    },
+    "extractor": {
+        "venture_name": "FloodSense",
+        "website": "https://floodsense.io",
+        "location": "Netherlands",
+        "short_description": "FloodSense provides real-time flood prediction for insurers.",
+        "stage": "Series A",
+        "total_funding": "$12M",
+        "insurance_sector": "P&C",
+    },
+    "classifier": {
+        "venture_name": "FloodSense",
+        "driver_tags": ["D1"],
+        "category": "Indirect",
+        "confidence": 0.85,
+        "reasoning": "Mock: flood prediction is directly relevant to climate CAT losses (D1).",
+    },
+    "impact": {
+        "drivers": ["D1"],
+        "impact_areas": ["I3"],
+        "impact_direction": "positive",
+        "mechanism": "Improves flood prediction accuracy, enabling earlier warnings and reducing property damage.",
+        "insurance_effect": "Reduces claims severity in property and flood insurance lines.",
+        "time_horizon": "short",
+        "confidence": 0.8,
+    },
+}
+
+
+def _is_mock_mode() -> bool:
+    """Return True if USE_MOCK_LLM environment variable is set to 'true'."""
+    return os.getenv("USE_MOCK_LLM", "").strip().lower() == "true"
 
 # Default number of times to retry a failed LLM call before giving up.
 # This handles transient network errors and temporary rate limits.
@@ -71,6 +125,12 @@ def call_llm(
     Returns:
         The raw text content of the LLM response, or None if all attempts failed.
     """
+    # Mock mode: return a static response without hitting the API
+    if _is_mock_mode():
+        mock_data = _MOCK_RESPONSES.get(context, {"mock": True, "context": context})
+        log.debug(f"[{context}] Mock mode: returning static response.")
+        return json.dumps(mock_data)
+
     client = openai.OpenAI(api_key=settings.openai_api_key)
 
     for attempt in range(1, max_retries + 2):  # +2 because range is exclusive

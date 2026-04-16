@@ -127,6 +127,60 @@ class ExtractedFields(BaseModel):
 
 
 # ============================================================
+# Stage 5 — Impact Analysis output
+# ============================================================
+
+# Valid impact area codes
+VALID_IMPACT_AREAS = ("I1", "I2", "I3", "I4", "I5")
+
+# Valid impact directions
+VALID_IMPACT_DIRECTIONS = ("positive", "negative", "mixed")
+
+# Valid time horizons
+VALID_TIME_HORIZONS = ("short", "medium", "long")
+
+
+class ImpactResult(BaseModel):
+    """
+    Insurance impact analysis for a verified venture.
+
+    Maps the venture's effect onto the five insurance outcome areas (I1–I5):
+      I1 — Premium Revenue
+      I2 — Investment Revenue
+      I3 — Claims Costs
+      I4 — Operational Costs
+      I5 — Capital & Reserves
+
+    Added in v0.3.
+    """
+
+    drivers: list[str] = Field(
+        description="D1–D11 driver tags that are the root cause of the impact."
+    )
+    impact_areas: list[str] = Field(
+        description="Which insurance outcome areas are affected (e.g. ['I3', 'I5'])."
+    )
+    impact_direction: str = Field(
+        description="'positive' = reduces risk/cost, 'negative' = increases risk/cost, 'mixed'."
+    )
+    mechanism: str = Field(
+        description="Short technical explanation of how the venture produces the impact."
+    )
+    insurance_effect: str = Field(
+        description="Business-level explanation of what this means for insurers."
+    )
+    time_horizon: str = Field(
+        description="'short' (<2 years), 'medium' (2–5 years), or 'long' (>5 years)."
+    )
+    confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Analyst confidence in this impact assessment (0.0–1.0).",
+    )
+
+
+# ============================================================
 # Stage 4 — Classifier output
 # ============================================================
 
@@ -224,17 +278,43 @@ class VentureRecord(BaseModel):
         ),
     )
 
+    # Impact analysis (v0.3)
+    impact: Optional[ImpactResult] = Field(
+        default=None,
+        description="Insurance impact analysis produced in Step 5. None if not yet analysed.",
+    )
+
     def to_flat_dict(self) -> dict:
         """
         Convert to a flat dictionary suitable for a CSV row.
 
         Lists are joined into pipe-separated strings for CSV compatibility:
-        - driver_tags: ["D1", "D9"] → "D1|D9"
-        - source_urls: ["https://a.com", "https://b.com"] → "https://a.com|https://b.com"
+        - driver_tags: ["D1", "D9"]  → "D1|D9"
+        - source_urls: [...]          → pipe-separated URLs
+
+        Impact fields are flattened from the nested ImpactResult:
+        - impact_areas: ["I3", "I5"] → "I3|I5"
+        - impact_direction, mechanism, time_horizon, impact_confidence are scalars.
         """
         d = self.model_dump()
         d["driver_tags"] = "|".join(self.driver_tags)
         d["source_urls"] = "|".join(self.source_urls)
+
+        # Remove nested impact dict; replace with flat columns
+        d.pop("impact", None)
+        if self.impact:
+            d["impact_areas"] = "|".join(self.impact.impact_areas)
+            d["impact_direction"] = self.impact.impact_direction
+            d["mechanism"] = self.impact.mechanism
+            d["time_horizon"] = self.impact.time_horizon
+            d["impact_confidence"] = self.impact.confidence
+        else:
+            d["impact_areas"] = ""
+            d["impact_direction"] = ""
+            d["mechanism"] = ""
+            d["time_horizon"] = ""
+            d["impact_confidence"] = None
+
         return d
 
 

@@ -30,6 +30,7 @@ from src.scout import generate_candidates
 from src.verifier import verify_venture
 from src.extractor import extract_fields
 from src.classifier import classify_venture
+from src.impact import analyze_impact
 from src.saver import save_verified_ventures, save_rejected_candidates, print_summary, make_run_id
 
 log = get_logger(__name__)
@@ -45,7 +46,8 @@ def run_scout_workflow(query: str, max_candidates: int) -> None:
         2. Verifier  — confirm each candidate has a live official website
         3. Extractor — extract structured fields (location, stage, funding, ...)
         4. Classifier — assign D1–D11 tags and Direct/Indirect category
-        5. Saver     — write verified ventures and rejected candidates to disk
+        5. Impact    — estimate how each venture affects insurance outcomes (I1–I5)
+        6. Saver     — write verified ventures and rejected candidates to disk
 
     Args:
         query: Natural language research query.
@@ -74,7 +76,7 @@ def run_scout_workflow(query: str, max_candidates: int) -> None:
     # ------------------------------------------------------------------ #
     # STEP 1 — Candidate Discovery
     # ------------------------------------------------------------------ #
-    console.print("[bold]Step 1/4[/bold] — Generating candidates...")
+    console.print("[bold]Step 1/5[/bold] — Generating candidates...")
     log.info(f"Starting scout workflow. Query: '{query}'")
 
     candidates = generate_candidates(query=query, max_candidates=max_candidates)
@@ -93,7 +95,7 @@ def run_scout_workflow(query: str, max_candidates: int) -> None:
     verified_ventures: list[VentureRecord] = []
     rejected_candidates: list[RejectedCandidate] = []
 
-    console.print(f"[bold]Steps 2–4[/bold] — Verifying, extracting, and classifying...")
+    console.print(f"[bold]Steps 2–4[/bold] — Verifying, extracting, and classifying...  (Step 5 impact analysis follows)")
     console.print()
 
     for i, candidate in enumerate(candidates, start=1):
@@ -163,9 +165,32 @@ def run_scout_workflow(query: str, max_candidates: int) -> None:
         console.print()
 
     # ------------------------------------------------------------------ #
-    # STEP 5 — Save Results
+    # STEP 5 — Impact Analysis
     # ------------------------------------------------------------------ #
-    console.print("[bold]Step 5[/bold] — Saving results...")
+    console.print(f"[bold]Step 5/5[/bold] — Impact analysis...")
+    console.print()
+
+    for venture in verified_ventures:
+        console.print(f"  Analysing impact: {venture.venture_name}")
+        time.sleep(0.5)
+        impact = analyze_impact(venture)
+        venture.impact = impact
+        if impact:
+            areas_str = ", ".join(impact.impact_areas)
+            confidence_pct = int(impact.confidence * 100)
+            console.print(
+                f"    [dim]Impact:[/dim] {impact.impact_direction} | [{areas_str}] | "
+                f"{impact.time_horizon} horizon | {confidence_pct}% confidence"
+            )
+        else:
+            console.print(f"    [yellow]⚠ Impact analysis skipped (LLM unavailable)[/yellow]")
+
+    console.print()
+
+    # ------------------------------------------------------------------ #
+    # STEP 6 — Save Results
+    # ------------------------------------------------------------------ #
+    console.print("[bold]Saving results...[/bold]")
     save_verified_ventures(verified_ventures, run_id=run_id)
     save_rejected_candidates(rejected_candidates, run_id=run_id)
     console.print("[green]✓[/green] Results saved.")

@@ -203,8 +203,14 @@ _CSV_COLUMN_ORDER = [
     "confidence",
     "short_description",
     "classification_reasoning",
-    "source_urls",           # v0.2: evidence trail
-    "extraction_confidence", # v0.2: how confident the extractor was
+    "source_urls",            # v0.2: evidence trail
+    "extraction_confidence",  # v0.2: how confident the extractor was
+    # v0.3: impact analysis columns
+    "impact_areas",           # pipe-separated I1–I5 codes, e.g. "I3|I5"
+    "impact_direction",       # "positive", "negative", or "mixed"
+    "mechanism",              # short technical explanation
+    "time_horizon",           # "short", "medium", or "long"
+    "impact_confidence",      # 0.0–1.0
 ]
 
 
