@@ -36,6 +36,8 @@ from src.saver import save_verified_ventures, save_rejected_candidates, print_su
 log = get_logger(__name__)
 console = Console()
 
+from src.config import settings
+print("Mock mode:", settings.use_mock_llm)
 
 def run_scout_workflow(query: str, max_candidates: int) -> None:
     """

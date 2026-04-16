@@ -44,6 +44,12 @@ log = get_logger(__name__)
 # Each key is the `context` string passed by the caller (e.g. "impact").
 # ─────────────────────────────────────────────────────────────────────────────
 
+def call_llm(prompt: str, system_prompt: str, task_type: str = "generic") -> str:
+    if settings.use_mock_llm:
+        return mock_response(task_type, prompt)
+
+
+
 _MOCK_RESPONSES: dict[str, dict] = {
     "scout": {
         "candidates": [

@@ -41,6 +41,9 @@ class Settings:
         # The error will be raised by OpenAI SDK when an actual call is made.
         self.openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
 
+        # Mock mode (offline development)
+        self.use_mock_llm: bool = os.getenv("USE_MOCK_LLM", "false").lower() == "true"
+
         # ------------------------------------------------------------------ #
         # Optional settings (with sensible defaults)
         # ------------------------------------------------------------------ #
@@ -69,11 +72,11 @@ class Settings:
 
     def validate_api_key(self) -> None:
         """
-        Raise a clear error if OPENAI_API_KEY is not set.
-
-        Call this from main.py before starting any workflow that uses the LLM.
-        We do NOT call this at startup so that tests can run without a key.
+        Skip validation if mock mode is enabled.
         """
+        if self.use_mock_llm:
+            return
+
         if not self.openai_api_key:
             raise EnvironmentError(
                 "Required environment variable 'OPENAI_API_KEY' is not set.\n"
