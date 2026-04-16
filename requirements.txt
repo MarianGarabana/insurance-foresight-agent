@@ -1,0 +1,27 @@
+# ============================================================
+# Insurance Foresight Agent — Python dependencies
+# Python 3.11+ required
+# ============================================================
+
+# OpenAI SDK — used for all LLM calls
+openai>=1.30.0
+
+# Pydantic — data validation and typed models
+pydantic>=2.6.0
+
+# pandas — tabular data, CSV export
+pandas>=2.2.0
+
+# requests — HTTP calls to verify venture websites
+requests>=2.31.0
+
+# python-dotenv — load .env files automatically
+python-dotenv>=1.0.0
+
+# rich — pretty terminal output (tables, colors, spinners)
+rich>=13.7.0
+
+# Tavily — web search API for search-grounded candidate discovery (v0.2)
+# Sign up free at https://tavily.com — set TAVILY_API_KEY in your .env
+# Optional: the system works without this (falls back to LLM-only mode)
+tavily-python>=0.3.0

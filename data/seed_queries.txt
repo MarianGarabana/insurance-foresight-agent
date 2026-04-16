@@ -1,0 +1,46 @@
+# Insurance Foresight Agent — Sample Research Queries
+# =====================================================
+# Copy any of these queries and paste them into the CLI:
+#   python -m src.main scout "<query here>"
+#
+# These are starting points. Write your own queries freely.
+
+# --- D1: Climate Change & Catastrophe Losses ---
+Find flood-risk technology ventures in Europe relevant to insurance
+Find wildfire analytics and prediction startups relevant to insurers
+Find climate adaptation technology companies that could reduce catastrophe losses
+Find parametric insurance ventures covering weather and climate risk
+Find companies building catastrophe modelling tools for insurers
+
+# --- D2: AI & Digital Transformation ---
+Find AI-powered underwriting technology ventures
+Find insurance claims automation startups
+Find fraud detection ventures for the insurance industry
+Find digital-native insurance infrastructure companies
+
+# --- D4: Systemic Cyber Risk ---
+Find cyber insurance technology ventures
+Find cyber risk analytics and scoring companies
+Find cyber resilience startups relevant to the insurance sector
+
+# --- D5: Demographic Shifts & Longevity Risk ---
+Find longevity analytics ventures relevant to life insurers
+Find health and benefits technology startups relevant to insurance
+
+# --- D8: Protection Gap & Underinsurance ---
+Find embedded insurance platform ventures
+Find parametric microinsurance ventures for underserved markets
+Find SME insurance technology startups
+
+# --- D9: Regulatory Evolution & ESG Compliance ---
+Find ESG reporting and climate risk compliance ventures relevant to insurers
+Find carbon accounting platforms with insurance relevance
+
+# --- D10: Distribution Disruption ---
+Find API-based embedded insurance distribution platforms
+Find affinity insurance and group coverage technology ventures
+
+# --- Cross-driver queries ---
+Find non-obvious climate tech ventures that could materially affect insurance loss ratios
+Find European insurtech startups with strong ESG or climate focus
+Find reinsurance technology and risk transfer infrastructure ventures
